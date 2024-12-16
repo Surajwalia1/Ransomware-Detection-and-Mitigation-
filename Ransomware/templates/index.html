@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ransomware and Network Monitoring</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-color: #6784e4;
+        }
+
+        h1 {
+            color: #e3eaf1;
+        }
+
+        .card {
+            border: 1px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #6c757d;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn {
+            border-radius: 20px;
+        }
+
+        #logs-list, #network-logs-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #logs-list li, #network-logs-list li {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4"><i class="fa-solid fa-shield-virus"></i> Ransomware and Network Monitoring</h1>
+        
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fa-solid fa-gear"></i> Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form id="config-form">
+                    <div class="mb-3">
+                        <label for="monitor-file" class="form-label"><i class="fa-solid fa-file-upload"></i> Upload File to Monitor:</label>
+                        <input type="file" class="form-control" id="monitor-file" name="monitor-file" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="backup-folder" class="form-label"><i class="fa-solid fa-folder"></i> Backup Folder Path:</label>
+                        <input type="text" class="form-control" id="backup-folder" name="backup-folder" placeholder="Enter backup folder path" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Configure</button>
+                </form>
+            </div>
+        </div>
+
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fa-solid fa-bell"></i> Monitoring Controls</h5>
+            </div>
+            <div class="card-body text-center">
+                <button id="start-monitoring" class="btn btn-success me-3"><i class="fa-solid fa-play"></i> Start Monitoring</button>
+                <button id="stop-monitoring" class="btn btn-danger"><i class="fa-solid fa-stop"></i> Stop Monitoring</button>
+            </div>
+        </div>
+
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fa-solid fa-file-alt"></i> Logs</h5>
+            </div>
+            <div class="card-body">
+                <button id="view-logs" class="btn btn-info mb-3"><i class="fa-solid fa-eye"></i> View Logs</button>
+                <ul id="logs-list" class="list-group"></ul>
+            </div>
+        </div>
+
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fa-solid fa-network-wired"></i> Network Monitoring</h5>
+            </div>
+            <div class="card-body text-center">
+                <button id="start-network" class="btn btn-success me-3"><i class="fa-solid fa-play"></i> Start Network Monitoring</button>
+                <button id="stop-network" class="btn btn-danger me-3"><i class="fa-solid fa-stop"></i> Stop Network Monitoring</button>
+                <button id="view-network-logs" class="btn btn-info"><i class="fa-solid fa-eye"></i> View Network Logs</button>
+                <ul id="network-logs-list" class="list-group mt-3"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        $(document).ready(function () {
+            
+            $('#config-form').on('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: '/configure',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        alert(response.message);
+                    },
+                    error: function (xhr) {
+                        alert(`Error: ${xhr.responseJSON.message}`);
+                    }
+                });
+            });
+
+            
+            $('#start-monitoring').on('click', function () {
+                const password = prompt('Set a password for stopping monitoring:');
+                if (password) {
+                    $.ajax({
+                        url: '/set-password',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ password }),
+                        success: function (response) {
+                            alert(response.message);
+                            $.get('/start', function (response) {
+                                alert(response.message);
+                            });
+                        },
+                        error: function (xhr) {
+                            alert(`Error: ${xhr.responseJSON.message}`);
+                        }
+                    });
+                } else {
+                    alert('Password is required to start monitoring.');
+                }
+            });
+
+            
+            $('#stop-monitoring').on('click', function () {
+                const password = prompt('Enter the password to stop monitoring:');
+                if (password) {
+                    $.ajax({
+                        url: '/validate-password',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ password }),
+                        success: function () {
+                            $.get('/stop', function (response) {
+                                alert(response.message);
+                            });
+                        },
+                        error: function () {
+                            alert('Invalid password.');
+                        }
+                    });
+                } else {
+                    alert('Password is required to stop monitoring.');
+                }
+            });
+
+           
+            $('#view-logs').on('click', function () {
+                $.get('/logs', function (response) {
+                    const logsList = $('#logs-list');
+                    logsList.empty();
+                    response.logs.forEach(log => {
+                        logsList.append(`<li class="list-group-item">${log}</li>`);
+                    });
+                });
+            });
+
+            
+            $('#start-network').on('click', function () {
+                $.get('/start-network', function (response) {
+                    alert(response.message);
+                });
+            });
+
+            
+            $('#stop-network').on('click', function () {
+                $.get('/stop-network', function (response) {
+                    alert(response.message);
+                });
+            });
+
+            
+            $('#view-network-logs').on('click', function () {
+                $.get('/network-logs', function (response) {
+                    const networkLogsList = $('#network-logs-list');
+                    networkLogsList.empty();
+                    response.logs.forEach(log => {
+                        networkLogsList.append(`<li class="list-group-item">${log}</li>`);
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
