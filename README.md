@@ -81,11 +81,6 @@ Access the web interface at http://localhost:5000/.
 - **Network Monitoring**: Employs `Scapy` for capturing and logging packet-level details.
 - **Backup Strategy**: Automatically creates backups when malicious changes are detected.
 
----
-
-## 🌍 Live Demo
-
-Check out a live demo [here](#).
 
 ---
 
